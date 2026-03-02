@@ -132,30 +132,33 @@ export class GatewayManager {
     this.handlers.disconnect.push(handler);
   }
 
+  private connectResolve: (() => void) | null = null;
+
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
+        this.connectResolve = resolve;
+
         const gatewayUrl = this.shouldResume && this.resumeGatewayUrl
           ? this.resumeGatewayUrl
           : GATEWAY_URL;
-        
+
         const url = `${gatewayUrl}/?v=${GATEWAY_VERSION}&encoding=json`;
-        
+
         this.ws = new WebSocket(url);
-        
+
         this.ws.onopen = () => {
           this.connected = true;
         };
-        
+
         this.ws.onmessage = (event) => {
           this.handleMessage(event.data as string);
-          resolve();
         };
-        
+
         this.ws.onclose = (event) => {
           this.handleClose(event.code, event.reason);
         };
-        
+
         this.ws.onerror = (error) => {
           this.handleError(new Error(`WebSocket error: ${error}`));
           reject(error);
@@ -277,7 +280,12 @@ export class GatewayManager {
     this.reconnectAttempts = 0;
     this.reconnectDelay = INITIAL_RECONNECT_DELAY;
     this.shouldResume = false;
-    
+
+    if (this.connectResolve) {
+      this.connectResolve();
+      this.connectResolve = null;
+    }
+
     this.handlers.ready.forEach(handler => {
       try {
         handler(data);
