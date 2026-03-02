@@ -40,7 +40,7 @@ interface IdentifyPayload {
     client_launch_id?: string;
     is_fast_connect?: boolean;
   };
-  capabilities: number;
+  intents: number;
   compress?: boolean;
   large_threshold?: number;
   shard?: [number, number];
@@ -443,7 +443,7 @@ export class GatewayManager {
         has_client_mods: false,
         browser_user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
       },
-      capabilities: this.intents,
+      intents: this.intents,
     };
     
     const payload: GatewayPayload = {
